@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Привет, пупсик!</title>
+<style>
+body{margin:0;background:linear-gradient(rgba(10,10,15,.72),rgba(10,10,15,.85)),url('bg.jpg') center/cover fixed no-repeat #0c0c12;color:#e6e8ee;font-family:Georgia,serif;display:flex;justify-content:center;align-items:center;min-height:100vh;line-height:1.7;text-align:center;overflow-x:hidden}
+#intro{position:fixed;inset:0;background:linear-gradient(rgba(10,10,15,.75),rgba(10,10,15,.88)),url('bg.jpg') center/cover no-repeat #0a0a0f;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:10;transition:opacity 1.2s ease}
+#intro.hide{opacity:0;pointer-events:none}
+.h-box{position:relative;width:310px;height:290px;display:flex;flex-direction:column;justify-content:center;align-items:center}
+#c{position:absolute;inset:0;pointer-events:none}
+#finalBg,#sparkLayer{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+#finalBg{z-index:1;display:none}
+#sparkLayer{z-index:5}
+#greet{position:relative;z-index:2;font-size:30px;font-weight:bold;color:#fff0f7;text-shadow:0 0 10px #ff66b3,0 0 22px #ff1a8c,0 0 35px #ff1a8c;opacity:0;transform:scale(.92);transition:opacity 1.8s ease,transform 1.8s ease}
+#greet.on{opacity:1;transform:scale(1)}
+.box{position:relative;z-index:2;max-width:560px;width:100%;padding:24px 16px;box-sizing:border-box;display:none}
+.box.on{display:block}
+.step{display:none;animation:fade 1s ease forwards;background:rgba(15,16,22,.64);backdrop-filter:blur(7px);padding:24px 18px;border-radius:16px;border:1px solid rgba(255,150,200,.18);box-shadow:0 10px 40px rgba(0,0,0,.5);box-sizing:border-box}
+.step.on{display:block}
+#s5.on{border-color:rgba(255,120,190,.42);animation:fade 1.2s ease forwards,glowPulse 3.5s ease-in-out infinite}
+#s5.sad.on{border-color:rgba(95,155,255,.45);animation:fade 1.2s ease forwards,sadGlow 3.5s ease-in-out infinite}
+@keyframes glowPulse{0%,100%{box-shadow:0 10px 40px rgba(0,0,0,.55),0 0 22px rgba(255,60,150,.18)}50%{box-shadow:0 10px 45px rgba(0,0,0,.6),0 0 38px rgba(255,90,175,.38)}}
+@keyframes sadGlow{0%,100%{box-shadow:0 10px 40px rgba(0,0,0,.55),0 0 22px rgba(55,130,255,.22)}50%{box-shadow:0 10px 45px rgba(0,0,0,.6),0 0 38px rgba(85,170,255,.45)}}
+@keyframes fade{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+h1{font-weight:normal;font-size:26px;color:#fff5fa;text-shadow:0 0 12px rgba(255,105,180,.65);margin-top:0;margin-bottom:18px}
+#s5 h1{font-size:28px;text-shadow:0 0 12px #ff66b3,0 0 26px rgba(255,26,140,.75)}
+#s5.sad h1{color:#e6f2ff;text-shadow:0 0 12px #4da6ff,0 0 26px rgba(30,144,255,.85)}
+#sadCanvas{display:none;margin:0 auto 10px;max-width:100%}
+p{font-size:16px;color:#e0d8e2;text-shadow:0 0 8px rgba(255,105,180,.2);margin-bottom:20px;min-height:1.5em;overflow-wrap:break-word}
+.frame{background:#181a22;padding:10px 10px 15px;border-radius:6px;width:220px;margin:20px auto;box-shadow:0 10px 30px rgba(0,0,0,.6);border:1px solid rgba(255,150,200,.2)}
+.frame img{width:100%;height:250px;object-fit:cover;display:block;border-radius:3px}
+.cap{margin-top:8px;font-size:14px;color:#f5b8d8;font-style:italic}
+.btn{background:rgba(255,105,180,.1);color:#fff;border:1px solid rgba(255,150,200,.5);padding:12px 24px;font-size:15px;font-family:inherit;border-radius:25px;cursor:pointer;margin:6px;transition:.3s;text-shadow:0 0 8px rgba(255,105,180,.5)}
+.btn:hover,.btn:active{background:rgba(255,105,180,.28);border-color:#ff99cc;box-shadow:0 0 15px rgba(255,105,180,.4)}
+.fun{border-color:rgba(255,255,255,.15);color:#9ba0ae;font-size:14px;background:rgba(255,255,255,.04);text-shadow:none;user-select:none;box-sizing:border-box}
+textarea{width:100%;max-width:420px;height:85px;background:rgba(24,26,34,.9);border:1px solid rgba(255,150,200,.3);border-radius:10px;color:#fff;padding:12px;font-family:inherit;font-size:15px;margin-bottom:12px;resize:none;box-sizing:border-box}
+textarea:focus{outline:none;border-color:#ff80bf;box-shadow:0 0 12px rgba(255,105,180,.3)}
+.t-caret{display:inline-block;width:2px;height:1em;background:#ff80bf;box-shadow:0 0 8px #ff1a8c;vertical-align:middle;margin-left:1px}
+.after-box{opacity:0;transform:translateY(10px);transition:opacity .8s ease,transform .8s ease;pointer-events:none}
+.after-box.show{opacity:1;transform:translateY(0);pointer-events:auto}
+</style>
+</head>
+<body>
+<canvas id="finalBg"></canvas>
+<canvas id="sparkLayer"></canvas>
+
+<div id="intro">
+  <div class="h-box">
+    <canvas id="c" width="310" height="290"></canvas>
+    <div id="greet">Привет, пупсик!</div>
+  </div>
+  <button class="btn" id="sBtn" style="opacity:0;pointer-events:none;transition:opacity 1.8s ease" onclick="go()">Открыть</button>
+</div>
+
+<div class="box" id="main">
+  <div class="step on" id="s1">
+    <h1>3 года нашего общения</h1>
+    <div class="frame"><img src="photo1.jpg" alt="Лера"></div>
+    <p class="tw">Сегодня ровно 3 года с того дня, как мы начали общаться. За это время у нас было много всего, и хорошего, и плохого.</p>
+    <p class="tw">Не хотелось писать обычное сообщение в телеге, поэтому сделал вот такую штучку для тебя пупсик. Просто полистай дальше.</p>
+    <div class="after-box"><button class="btn" onclick="step(2)">прыг скок</button></div>
+  </div>
+
+  <div class="step" id="s2">
+    <h1>То, что я понял слишком поздно</h1>
+    <p class="tw">Когда ты болела и тебе больше всего нужна была простая поддержка, я просто сидел в играх и даже не находил минуты спросить, как ты себя чувствуешь.</p>
+    <p class="tw">Мне правда очень больно за это. Ни одно мое дело точно не стоили твоих слез. Прости, что в те моменты меня не было рядом.</p>
+    <div class="after-box"><button class="btn" onclick="step(3)">прыг скок</button></div>
+  </div>
+
+  <div class="step" id="s3">
+    <h1>Кстати, насчет пиратов...</h1>
+    <div class="frame"><img src="photo2.jpg" alt="Пиратка"><div class="cap">Самый опасная пиратка</div></div>
+    <p class="tw">Раз уж вспомнили это фото, ты ведь и правда настоящая пиратка. Три года назад взяла без боя и украла моё сердце.</p>
+    <p class="tw">И знаешь, я до сих пор ни секунды об этом не жалею. Спасибо тебе за твой смех, за доброту, и что мы всё равно остались друзьями.</p>
+    <div class="after-box"><button class="btn" onclick="step(4)">прыг скок</button></div>
+  </div>
+
+  <div class="step" id="s4">
+    <h1>Спасибо за эти 3 года солнце</h1>
+    <p class="tw">Я знаю, что это долго не продлится и рано или поздно у каждого из нас начнётся своя дорога. Но мне просто хотелось, чтобы ты знала, я ни секунды не жалею об этих трёх годах и всегда буду вспоминать тебя с теплом.</p>
+    <p class="tw">нажми на любую кнопку ниже</p>
+    <div class="after-box">
+      <button class="btn" onclick="send('Спасибо, мне правда стало теплее на душе')">Спасибо, мне правда стало теплее на душе</button><br>
+      <button class="btn" onclick="send('Я тоже ценю всё хорошее, что у нас было')">Я тоже ценю всё хорошее, что у нас было</button><br>
+      <button class="btn" onclick="send('Мне нужно время, но я рада, что мы общаемся')">Мне нужно время, но я рада, что мы общаемся</button><br>
+      <button class="btn fun" id="btnNo" onclick="noClick()">Нет, не прощаю</button><br>
+      <button class="btn fun" id="btnF" onmouseenter="runAway(this)" ontouchstart="runAway(this);return false">Иди нахуй</button>
+      <p style="margin-top:24px;font-size:14px">Или можешь написать пару слов от себя:</p>
+      <textarea id="txt" placeholder="Напиши здесь, если захочешь..."></textarea><br>
+      <button class="btn" onclick="sendTxt()">Отправить</button>
+    </div>
+  </div>
+
+  <div class="step" id="s5">
+    <h1>Береги себя, Лера</h1>
+    <canvas id="sadCanvas" width="260" height="220"></canvas>
+    <p class="tw">Спасибо, что дочитала до конца. Пусть у тебя всё будет хорошо.</p>
+  </div>
+</div>
+<script>
+const T='8910208177:AAFJ0if9B5lTU7onLqfu2-rUn4FHqN-cBkw',ID='8017389520';
+const cv=document.getElementById('c'),cx=cv.getContext('2d'),pts=[];
+for(let py=15;py<275;py+=12)for(let px=15;px<295;px+=12){let x=(px-155)/108,y=-(py-150)/108;if(Math.pow(x*x+y*y-1,3)-x*x*y*y*y<=0)pts.push({x:px,y:py,d:Math.floor(Math.random()*10),a:0,ph:Math.random()*6.28});}
+pts.sort((a,b)=>b.y-a.y);
+
+let phase=0,prog=0,hold=0,sadEnd=false,noStep=0,sent=false,heartsStarted=false,twToken=0,bgHalves=null,bgStopped=false;
+function anim(t){
+  cx.clearRect(0,0,310,290);cx.font='bold 12px monospace';cx.textAlign='center';cx.textBaseline='middle';
+  if(phase===0){prog+=1.2;if(prog>=pts.length+35){prog=pts.length;phase=1;}}
+  else if(phase===1){hold++;if(hold>130){phase=2;prog=0;}}
+  else if(phase===2){prog+=1.2;if(prog>=pts.length+45){phase=3;document.getElementById('greet').classList.add('on');setTimeout(()=>{let b=document.getElementById('sBtn');b.style.opacity=1;b.style.pointerEvents='auto';},600);}}
+  for(let i=0;i<pts.length;i++){
+    let p=pts[i];
+    if(phase===0)p.a=i<prog?Math.min(1,p.a+0.025):0;
+    else if(phase===1)p.a=Math.min(1,p.a+0.025);
+    else if(phase===2){let topIdx=pts.length-1-i;p.a=topIdx<prog?Math.max(0,p.a-0.022):p.a;}
+    else p.a=0;
+    if(p.a>0){
+      if(Math.random()<0.06)p.d=(p.d+1)%10;
+      let sh=Math.sin(t*0.004+p.ph);
+      cx.save();cx.translate(p.x,p.y);cx.rotate(sh*0.25);cx.globalAlpha=p.a*(0.7+0.3*sh);
+      cx.fillStyle=sh>0?'#ff4da6':'#ffb3d9';cx.shadowColor='#ff1a8c';cx.shadowBlur=8;cx.fillText(p.d,0,0);cx.restore();
+    }
+  }
+  if(phase<3)requestAnimationFrame(anim);
+}
+requestAnimationFrame(anim);
+
+const sc=document.getElementById('sparkLayer'),sx=sc.getContext('2d'),sparks=[];
+let sw,sh;
+function resizeSparks(){sw=sc.width=window.innerWidth;sh=sc.height=window.innerHeight;}
+resizeSparks();window.addEventListener('resize',resizeSparks);
+function addSparks(x,y,cnt,sp,up,s1,s2,fd){
+  for(let i=0;i<cnt;i++)sparks.push({x:x+(Math.random()-.5)*6,y:y+(Math.random()-.5)*6,vx:(Math.random()-.5)*sp,vy:-up*(.5+Math.random()*.8),a:1,s:s1+Math.random()*(s2-s1),fade:fd});
+}
+['click','touchstart'].forEach(ev=>window.addEventListener(ev,e=>{let p=e.touches?e.touches:e;if(p)addSparks(p.clientX,p.clientY,6,3.4,2.5,10,18,.024);},{passive:true}));
+(function renderSparks(){
+  sx.clearRect(0,0,sw,sh);sx.textAlign='center';sx.textBaseline='middle';
+  const col=sadEnd?'#70b8ff':'#ff80bf',shCol=sadEnd?'#1e90ff':'#ff1a8c';
+  for(let i=sparks.length-1;i>=0;i--){
+    let s=sparks[i];s.x+=s.vx;s.y+=s.vy;s.vy+=.025;s.a-=s.fade;
+    if(s.a<=0){sparks.splice(i,1);continue;}
+    sx.save();sx.globalAlpha=s.a;sx.font=Math.round(s.s)+'px sans-serif';sx.fillStyle=col;sx.shadowColor=shCol;sx.shadowBlur=10;sx.fillText('♥',s.x,s.y);sx.restore();
+  }
+  requestAnimationFrame(renderSparks);
+})();
+
+document.querySelectorAll('.tw').forEach(el=>{el.dataset.full=el.textContent.trim();el.textContent='';});
+function runTypewriter(stepEl){
+  const token=++twToken,paras=Array.from(stepEl.querySelectorAll('.tw')),after=stepEl.querySelector('.after-box');
+  if(after)after.classList.remove('show');
+  paras.forEach(p=>p.textContent='');
+  let pIdx=0,cIdx=0;
+  const caret=document.createElement('span');caret.className='t-caret';
+  if(sadEnd){caret.style.background='#70b8ff';caret.style.boxShadow='0 0 8px #1e90ff';}
+  function tick(){
+    if(token!==twToken)return;
+    if(pIdx>=paras.length){caret.remove();if(after)setTimeout(()=>{if(token===twToken)after.classList.add('show');},250);return;}
+    const p=paras[pIdx],full=p.dataset.full||'';
+    if(cIdx<=full.length){
+      p.textContent=full.slice(0,cIdx);p.appendChild(caret);
+      const ch=full[cIdx-1];
+      if(ch&&ch!==' '&&cIdx%2===0){const r=caret.getBoundingClientRect();if(r.width||r.height)addSparks(r.left,r.top+r.height*.4,2,1.6,1.5,9,15,.022);}
+      cIdx++;setTimeout(tick,(ch==='.'||ch==='!'||ch==='?')?220:(ch===','?110:34));
+    }else{caret.remove();pIdx++;cIdx=0;setTimeout(tick,340);}
+  }
+  setTimeout(tick,450);
+}
+function go(){document.getElementById('intro').classList.add('hide');setTimeout(()=>{document.getElementById('intro').style.display='none';document.getElementById('main').classList.add('on');startFinalHearts();runTypewriter(document.getElementById('s1'));},900);}
+function step(k){document.querySelectorAll('.step').forEach(e=>e.classList.remove('on'));const t=document.getElementById('s'+k);t.classList.add('on');window.scrollTo({top:0,behavior:'smooth'});runTypewriter(t);}
+
+function runAway(el){
+  if(el.parentElement!==document.body){el.style.width=el.offsetWidth+'px';document.body.appendChild(el);}
+  const vw=document.documentElement.clientWidth,vh=document.documentElement.clientHeight,bw=el.offsetWidth,bh=el.offsetHeight,pad=16;
+  const maxX=Math.max(pad,vw-bw-pad),maxY=Math.max(pad,vh-bh-pad);
+  el.style.position='fixed';el.style.margin='0';
+  el.style.left=(pad+Math.floor(Math.random()*(maxX-pad+1)))+'px';
+  el.style.top=(pad+Math.floor(Math.random()*(maxY-pad+1)))+'px';
+  el.style.zIndex='60';el.style.transition='left .22s ease,top .22s ease';
+}
+
+function noClick(){
+  const b=document.getElementById('btnNo');noStep++;
+  if(noStep===1){b.textContent='Ты уверена?';runAway(b);}
+  else if(noStep===2){b.textContent='Точно?';runAway(b);}
+  else if(noStep===3){b.textContent='Хорошо...';runAway(b);}
+  else{
+    sadEnd=true;
+    const s5=document.getElementById('s5');s5.classList.add('sad');
+    s5.querySelector('h1').textContent='Я всё понял';
+    s5.querySelector('.tw').dataset.full='Я всё понял. Прости ещё раз и береги себя, Лера.';
+    send('Нет, не прощаю (нажала 4 раза)');
+    startSadHeart();
+  }
+}
+
+function startSadHeart(){
+  const scv=document.getElementById('sadCanvas'),scx=scv.getContext('2d');scv.style.display='block';
+  const spts=[],embers=[];
+  for(let py=12;py<208;py+=9)for(let px=15;px<245;px+=9){
+    let x=(px-130)/78,y=-(py-108)/78;
+    if(Math.pow(x*x+y*y-1,3)-x*x*y*y*y<=0){let crack=130+Math.sin(py*0.11)*7;spts.push({x:px,y:py,side:px<crack?-1:1,d:Math.floor(Math.random()*10),a:0,ox:0,oy:0,ph:Math.random()*6.28,burned:false});}
+  }
+  spts.sort((a,b)=>b.y-a.y);
+  let sp=0,sprog=0,shold=0;
+  function sadLoop(t){
+    scx.clearRect(0,0,260,220);scx.font='bold 10px monospace';scx.textAlign='center';scx.textBaseline='middle';
+    if(sp===0){sprog+=1.8;if(sprog>=spts.length+20){sprog=spts.length;sp=1;}}
+    else if(sp===1){shold++;if(shold>55){sp=2;sprog=0;}}
+    else if(sp===2){sprog+=1.3;if(sprog>=spts.length+70)sp=3;}
+    for(let i=0;i<spts.length;i++){
+      let p=spts[i];
+      if(sp===0)p.a=i<sprog?Math.min(1,p.a+0.04):0;
+      else if(sp===1)p.a=1;
+      else if(sp===2){
+        let topIdx=spts.length-1-i;
+        if(topIdx<sprog){p.ox+=p.side*0.32;p.oy+=0.18;p.a=Math.max(0,p.a-0.018);if(!p.burned&&p.a<0.75){p.burned=true;for(let k=0;k<2;k++)embers.push({x:p.x+p.ox,y:p.y+p.oy,vx:(Math.random()-.5)*1.1,vy:-0.8-Math.random()*1.6,r:2+Math.random()*3,a:1});}}
+      }
+      if(p.a>0){
+        if(Math.random()<0.08)p.d=(p.d+1)%10;
+        let fl=Math.sin(t*0.008+p.ph);
+        scx.save();scx.translate(p.x+p.ox,p.y+p.oy);scx.globalAlpha=p.a*(0.75+0.25*fl);
+        scx.fillStyle=fl>0?'#4da6ff':'#b3dcff';scx.shadowColor='#0077ff';scx.shadowBlur=10;scx.fillText(p.d,0,0);scx.restore();
+      }
+    }
+    for(let i=embers.length-1;i>=0;i--){
+      let e=embers[i];e.x+=e.vx;e.y+=e.vy;e.a-=0.022;e.r*=0.985;
+      if(e.a<=0){embers.splice(i,1);continue;}
+      scx.save();scx.globalAlpha=e.a;scx.beginPath();scx.arc(e.x,e.y,e.r,0,6.28);
+      scx.fillStyle=e.a>0.5?'#99d6ff':'#1e90ff';scx.shadowColor='#0088ff';scx.shadowBlur=12;scx.fill();scx.restore();
+    }
+    if(sp<3||embers.length>0)requestAnimationFrame(sadLoop);
+  }
+  requestAnimationFrame(sadLoop);
+}
+
+function send(m){if(sent)return;sent=true;document.querySelectorAll('.fun').forEach(el=>el.remove());fetch('https://telegram.org',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:ID,text:'💌 Ответ от Леры:\n\n'+m})}).catch(()=>{});step(5);}
+function sendTxt(){let v=document.getElementById('txt').value.trim();if(!v){document.getElementById('txt').focus();return;}send('Написала:\n"'+v+'"');}
+
+function startFinalHearts(){
+  if(heartsStarted)return;heartsStarted=true;
+  const fc=document.getElementById('finalBg'),fx=fc.getContext('2d');fc.style.display='block';
+  let w,h,freezeTimer=0;function resize(){w=fc.width=window.innerWidth;h=fc.height=window.innerHeight;}resize();window.addEventListener('resize',resize);
+  const pink=['#ff4da6','#ff80bf','#ffb3d9','#ff1a8c','#ff99cc'],sad=['#4da6ff','#80c1ff','#3399ff','#66b3ff','#b3dcff'],hearts=[],cnt=Math.min(34,Math.floor(w/14)+12);
+  function mk(ry){return{x:Math.random()*w,y:ry?Math.random()*h:-20-Math.random()*120,size:16+Math.random()*16,speed:.55+Math.random()*.75,swayAmp:14+Math.random()*22,swayFreq:.0015+Math.random()*.002,phase:Math.random()*6.28,color:pink[Math.floor(Math.random()*pink.length)]};}
+  for(let i=0;i<cnt;i++)hearts.push(mk(true));
+  (function loop(t){
+    if(bgStopped)return;
+    fx.clearRect(0,0,w,h);fx.textAlign='center';fx.textBaseline='middle';
+    if(!sadEnd){
+      for(let i=0;i<hearts.length;i++){
+        let p=hearts[i];p.y+=p.speed;if(p.y>h+35){hearts[i]=mk(false);continue;}
+        let r=Math.max(0,Math.min(1,p.y/h)),a=Math.min(1,r/.18)*Math.min(1,(1-r)/.28)*(.72+.28*Math.sin(t*.004+p.phase))*.88,dx=p.x+Math.sin(t*p.swayFreq+p.phase)*p.swayAmp;
+        fx.save();fx.translate(dx,p.y);fx.rotate(Math.sin(t*p.swayFreq+p.phase)*.22);fx.globalAlpha=a;fx.font=Math.round(p.size)+'px sans-serif';fx.fillStyle=p.color;fx.shadowColor='#ff1a8c';fx.shadowBlur=14;fx.fillText('♥',0,0);fx.restore();
+      }
+    }else{
+      if(!bgHalves){
+        bgHalves=[];
+        for(let i=0;i<hearts.length;i++){
+          let p=hearts[i],dx=p.x+Math.sin(t*p.swayFreq+p.phase)*p.swayAmp,col=sad[i%sad.length];
+          if(p.y>-20&&p.y<h+20){
+            bgHalves.push({x:dx,y:p.y,size:p.size,side:-1,ox:0,oy:0,rot:0,a:0.95,col:col});
+            bgHalves.push({x:dx,y:p.y,size:p.size,side:1,ox:0,oy:0,rot:0,a:0.95,col:col});
+          }
+        }
+      }
+      freezeTimer++;
+      let alive=false;
+      for(let i=0;i<bgHalves.length;i++){
+        let h2=bgHalves[i];
+        if(freezeTimer>180){h2.ox+=h2.side*0.24;h2.oy+=0.14;h2.rot+=h2.side*0.008;h2.a=Math.max(0,h2.a-0.0038);}
+        if(h2.a>0){
+          alive=true;
+          fx.save();fx.translate(h2.x+h2.ox,h2.y+h2.oy);fx.rotate(h2.rot);fx.globalAlpha=h2.a;
+          fx.beginPath();
+          if(h2.side===-1)fx.rect(-h2.size,-h2.size,h2.size,h2.size*2);
+          else fx.rect(0,-h2.size,h2.size,h2.size*2);
+          fx.clip();
+          fx.font=Math.round(h2.size)+'px sans-serif';fx.fillStyle=h2.col;fx.shadowColor='#0077ff';fx.shadowBlur=16;
+          fx.fillText('♥',0,0);fx.restore();
+        }
+      }
+      if(!alive&&freezeTimer>190){fx.clearRect(0,0,w,h);bgStopped=true;return;}
+    }
+    requestAnimationFrame(loop);
+  })(0);
+}
+</script>
+</body>
+</html>
